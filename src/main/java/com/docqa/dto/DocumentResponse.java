@@ -1,11 +1,12 @@
 package com.docqa.dto;
 
 import com.docqa.model.Document;
-import jakarta.validation.constraints.NotBlank;
+
+
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class DocumentResponse {

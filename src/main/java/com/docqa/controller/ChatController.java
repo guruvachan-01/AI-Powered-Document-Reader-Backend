@@ -1,8 +1,9 @@
 package com.docqa.controller;
 
 import com.docqa.dto.ChatRequest;
+
 import com.docqa.dto.ChatResponse;
-import com.docqa.model.ChatMessage;
+
 import com.docqa.model.User;
 import com.docqa.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/chat")

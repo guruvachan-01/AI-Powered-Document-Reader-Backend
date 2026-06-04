@@ -1,28 +1,28 @@
 package com.docqa.service;
 
-import com.docqa.dto.ChatResponse;
-import com.docqa.model.Timestamp;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatClient;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.docqa.model.Timestamp;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AiService {
 
-    private final ChatModel chatModel;
+    private final OpenAiChatClient chatClient;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -48,11 +48,7 @@ public class AiService {
 
         try {
 
-            return ChatClient.create(chatModel)
-                    .prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
+            return chatClient.call(prompt);
 
         } catch (Exception e) {
 
@@ -65,10 +61,11 @@ public class AiService {
     // =========================
     // ASK QUESTION
     // =========================
-    public ChatResponse askQuestion(String question,
-                                    String documentContent,
-                                    List<Timestamp> timestamps,
-                                    String docType) {
+    public com.docqa.dto.ChatResponse askQuestion(
+            String question,
+            String documentContent,
+            List<Timestamp> timestamps,
+            String docType) {
 
         try {
 
@@ -82,7 +79,7 @@ public class AiService {
 
             Prompt prompt = new Prompt(messages);
 
-            String answer = chatModel.call(prompt)
+            String answer = chatClient.call(prompt)
                     .getResult()
                     .getOutput()
                     .getContent();
@@ -90,8 +87,8 @@ public class AiService {
             // Find relevant timestamps
             Double timestampRef = null;
 
-            List<ChatResponse.TimestampDto> relevantTimestamps =
-                    new ArrayList<>();
+            List<com.docqa.dto.ChatResponse.TimestampDto>
+                    relevantTimestamps = new ArrayList<>();
 
             if (!timestamps.isEmpty()) {
 
@@ -99,12 +96,13 @@ public class AiService {
                         findRelevantTimestamps(question, timestamps);
 
                 if (!relevantTimestamps.isEmpty()) {
+
                     timestampRef =
                             relevantTimestamps.get(0).getStartTime();
                 }
             }
 
-            return ChatResponse.builder()
+            return com.docqa.dto.ChatResponse.builder()
                     .answer(answer)
                     .timestampRef(timestampRef)
                     .relevantTimestamps(relevantTimestamps)
@@ -114,7 +112,7 @@ public class AiService {
 
             log.error("Failed to answer question", e);
 
-            return ChatResponse.builder()
+            return com.docqa.dto.ChatResponse.builder()
                     .answer("Failed to process your question.")
                     .build();
         }
@@ -148,11 +146,7 @@ public class AiService {
 
         try {
 
-            String response = ChatClient.create(chatModel)
-                    .prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
+            String response = chatClient.call(prompt);
 
             return parseTimestampsFromJson(response);
 
@@ -216,7 +210,8 @@ public class AiService {
     // =========================
     // FIND RELEVANT TIMESTAMPS
     // =========================
-    private List<ChatResponse.TimestampDto> findRelevantTimestamps(
+    private List<com.docqa.dto.ChatResponse.TimestampDto>
+    findRelevantTimestamps(
             String question,
             List<Timestamp> timestamps
     ) {
@@ -252,7 +247,8 @@ public class AiService {
 
                 .limit(3)
 
-                .map(t -> ChatResponse.TimestampDto.builder()
+                .map(t -> com.docqa.dto.ChatResponse.TimestampDto
+                        .builder()
                         .startTime(t.getStartTime())
                         .endTime(t.getEndTime())
                         .text(t.getText())

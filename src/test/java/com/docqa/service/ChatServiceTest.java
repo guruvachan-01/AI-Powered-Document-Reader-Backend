@@ -1,5 +1,25 @@
 package com.docqa.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.docqa.dto.ChatHistoryResponse;
 import com.docqa.dto.ChatRequest;
 import com.docqa.dto.ChatResponse;
 import com.docqa.model.ChatMessage;
@@ -8,18 +28,6 @@ import com.docqa.model.Timestamp;
 import com.docqa.model.User;
 import com.docqa.repository.ChatMessageRepository;
 import com.docqa.repository.TimestampRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ChatServiceTest {
@@ -90,7 +98,7 @@ class ChatServiceTest {
         when(chatMessageRepository.findByDocumentOrderByCreatedAtAsc(testDoc))
                 .thenReturn(List.of(msg));
 
-        List<ChatMessage> result = chatService.getChatHistory(1L, testUser);
+        List<ChatHistoryResponse> result = chatService.getChatHistory(1L, testUser);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getContent()).isEqualTo("Hello");
